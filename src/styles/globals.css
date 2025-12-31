@@ -1,0 +1,20 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --radius: 0.5rem;
+  }
+  
+  body {
+    @apply bg-gradient-to-br from-amber-50/50 via-white/50 to-rose-50/50;
+    @apply min-h-screen text-slate-800;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
