@@ -9,7 +9,7 @@
 - **样式**: Tailwind CSS + 自定义国风主题
 - **认证**: NextAuth.js (Credentials + JWT)
 - **数据库**: Neon PostgreSQL + Prisma ORM
-- **AI 模型**: OpenAI GPT-4o, Anthropic Claude 3.5, YI-34B
+- **AI 模型**: OpenAI GPT-4o, Anthropic Claude 3.5, YI-34B, Moonshot AI
 - **状态管理**: SWR
 - **UI 组件**: Radix UI + 自定义组件
 
@@ -32,6 +32,7 @@ src/
 │  ├─ openai.ts           # OpenAI 集成
 │  ├─ claude.ts           # Claude 集成
 │  ├─ yi.ts               # YI 模型集成
+│  ├─ moonshot.ts         # Moonshot AI 集成
 │  └─ constants.ts        # 常量配置
 └─ styles/                # 样式文件
    ├─ globals.css         # 全局样式
@@ -68,6 +69,7 @@ NEXTAUTH_URL="http://localhost:3000"
 OPENAI_API_KEY="your-openai-api-key"
 ANTHROPIC_API_KEY="your-anthropic-api-key"
 YI_API_KEY="your-yi-api-key"
+MOONSHOT_API_KEY="your-moonshot-api-key"
 ```
 
 ### 数据库迁移
@@ -112,11 +114,12 @@ vercel --prod
 ## 功能特性
 
 - 🔐 安全的用户认证（Credentials + JWT）
-- 💬 多 AI 模型支持（GPT-4o, Claude 3.5, YI-34B）
+- 💬 多 AI 模型支持（GPT-4o, Claude 3.5, YI-34B, Moonshot AI）
 - 🎨 国风主题 UI 设计
 - 📝 流式对话响应
 - 📜 对话历史记录
 - 🎯 运势算命专用接口
+- 🌍 国内模型支持（Moonshot AI / Kimi）
 
 ## API 接口
 
