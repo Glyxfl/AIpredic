@@ -13,6 +13,7 @@ export function useTyping(initialText: string = '') {
 
   const finish = () => {
     setIsTyping(false)
+    setText('')
   }
 
   const updateText = (newText: string) => {
