@@ -94,12 +94,12 @@ export function ChatWindow({ chatId, model, onModelChange }: ChatWindowProps) {
             const data = line.slice(6)
             
             if (data === "[DONE]") {
-              typing.finish()
-              
+              // 先添加消息，再结束流式，避免闪烁
               setMessages((prev) => [
                 ...prev,
                 { role: "assistant", content: typing.text },
               ])
+              typing.finish()
               
               break
             }
