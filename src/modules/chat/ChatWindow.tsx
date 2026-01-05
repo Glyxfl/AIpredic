@@ -60,6 +60,7 @@ export function ChatWindow({ chatId, model, onModelChange }: ChatWindowProps) {
     setMessages((prev) => [...prev, userMessage])
     setInput("")
     setLoading(true)
+    // 重置 typing 并设置初始消息
     typing.reset()
 
     try {
@@ -94,14 +95,20 @@ export function ChatWindow({ chatId, model, onModelChange }: ChatWindowProps) {
             const data = line.slice(6)
             
             if (data === "[DONE]") {
-              // 先添加消息，再延迟结束流式，避免闪烁
+              // 保存最终内容
               const finalContent = typing.text
-              setMessages((prev) => [
-                ...prev,
-                { role: "assistant", content: finalContent },
-              ])
-              // 使用 setTimeout 确保消息渲染完成后再结束流式
+              
+              // 使用 setTimeout 确保状态更新完成后再结束流式
               setTimeout(() => {
+                // 在 setTimeout 中添加消息并结束流式
+                setMessages((prev) => {
+                  // 检查最后一条消息是否已经是助手消息，避免重复
+                  const lastMsg = prev[prev.length - 1]
+                  if (lastMsg && lastMsg.role === 'assistant' && lastMsg.content === finalContent) {
+                    return prev
+                  }
+                  return [...prev, { role: "assistant", content: finalContent }]
+                })
                 typing.finish()
               }, 0)
               
