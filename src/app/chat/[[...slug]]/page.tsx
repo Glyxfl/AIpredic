@@ -9,15 +9,16 @@ import { ModelSelector } from "@/modules/chat/ModelSelector"
 import { ChatWindow } from "@/modules/chat/ChatWindow"
 import { Sidebar } from "@/modules/history/Sidebar"
 import { Button } from "@/components/ui/button"
-import { MODELS } from "@/lib/constants"
-import { DEFAULT_MODEL } from "@/lib/constants"
+import { MODELS, DEFAULT_MODEL, ModelType } from "@/lib/constants"
 
 export default function ChatPage() {
   const { data: session, status } = useSession()
   const params = useParams()
   const router = useRouter()
   const [isSidebarOpen, setSidebarOpen] = React.useState(false)
-  const [model, setModel] = React.useState(DEFAULT_MODEL)
+  const [model, setModel] = React.useState<ModelType>(DEFAULT_MODEL)
+  const handleModelChange = (id: string) => setModel(id as ModelType)
+  const handleChatModelChange = (m: string) => setModel(m as ModelType)
 
   React.useEffect(() => {
     if (status === "unauthenticated") {
@@ -67,7 +68,7 @@ export default function ChatPage() {
               <ModelSelector
                 models={MODELS}
                 value={model}
-                onChange={setModel}
+                onChange={handleModelChange}
               />
             </div>
           </div>
@@ -77,7 +78,7 @@ export default function ChatPage() {
           <ChatWindow
             chatId={chatId}
             model={model}
-            onModelChange={setModel}
+            onModelChange={handleChatModelChange}
           />
         </main>
       </div>
