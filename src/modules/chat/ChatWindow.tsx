@@ -19,9 +19,11 @@ export function ChatWindow({ chatId, model, onModelChange }: ChatWindowProps) {
   const [input, setInput] = React.useState("")
   const [messages, setMessages] = React.useState<Message[]>([])
   const [isLoading, setLoading] = React.useState(false)
-  const [currentChatId, setCurrentChatId] = React.useState(chatId)
+  // 使用 ref 而非 state 来跟踪当前聊天ID，避免状态不同步问题
+  const currentChatIdRef = React.useRef<string>(chatId)
   const typing = useTyping("")
   const messagesEndRef = React.useRef<HTMLDivElement>(null)
+  const isFetchingRef = React.useRef(false)
 
   const scrollToBottom = React.useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
@@ -31,26 +33,38 @@ export function ChatWindow({ chatId, model, onModelChange }: ChatWindowProps) {
     scrollToBottom()
   }, [messages, typing.text, scrollToBottom])
 
+  // 同步 chatId 到 ref
   React.useEffect(() => {
-    const fetchChat = async () => {
-      if (!chatId || chatId === "new") return
+    currentChatIdRef.current = chatId
+  }, [chatId])
 
-      try {
-        const res = await fetch(`/api/chat?chatId=${chatId}`)
-        if (res.ok) {
-          const data = await res.json()
-          setMessages(data.messages || [])
-          if (data.model && data.model !== model) {
-            onModelChange(data.model)
-          }
+  const fetchChat = React.useCallback(async () => {
+    const idToFetch = currentChatIdRef.current
+    if (!idToFetch || idToFetch === "new") return
+    
+    // 防止并发请求
+    if (isFetchingRef.current) return
+    isFetchingRef.current = true
+
+    try {
+      const res = await fetch(`/api/chat?chatId=${idToFetch}`)
+      if (res.ok) {
+        const data = await res.json()
+        setMessages(data.messages || [])
+        if (data.model && data.model !== model) {
+          onModelChange(data.model)
         }
-      } catch (error) {
-        console.error("Failed to fetch chat:", error)
       }
+    } catch (error) {
+      console.error("Failed to fetch chat:", error)
+    } finally {
+      isFetchingRef.current = false
     }
+  }, [model, onModelChange])
 
+  React.useEffect(() => {
     fetchChat()
-  }, [chatId, model, onModelChange])
+  }, [chatId, fetchChat])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -61,7 +75,7 @@ export function ChatWindow({ chatId, model, onModelChange }: ChatWindowProps) {
     setLoading(true)
     typing.reset()
     
-    // 先添加用户消息
+    // 先添加用户消息到本地状态
     setMessages((prev) => [...prev, { role: "user", content: userMessageContent }])
 
     try {
@@ -69,16 +83,18 @@ export function ChatWindow({ chatId, model, onModelChange }: ChatWindowProps) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          chatId: currentChatId === "new" ? undefined : currentChatId,
+          chatId: currentChatIdRef.current === "new" ? undefined : currentChatIdRef.current,
           model,
           message: userMessageContent,
         }),
       })
 
-      // 从响应头获取新的 chatId 并更新状态
+      // 从响应头获取新的 chatId 并更新 ref
       const newChatId = response.headers.get("X-Chat-Id")
-      if (newChatId && currentChatId === "new") {
-        setCurrentChatId(newChatId)
+      if (newChatId && currentChatIdRef.current === "new") {
+        currentChatIdRef.current = newChatId
+        // 通知父组件刷新路由
+        window.history.pushState({}, '', `/chat/${newChatId}`)
       }
 
       if (!response.ok) {
@@ -91,6 +107,7 @@ export function ChatWindow({ chatId, model, onModelChange }: ChatWindowProps) {
       if (!reader) throw new Error("No response body")
 
       let accumulatedContent = ""
+      let hasReceivedDone = false
       
       while (true) {
         const { done, value } = await reader.read()
@@ -104,13 +121,7 @@ export function ChatWindow({ chatId, model, onModelChange }: ChatWindowProps) {
             const data = line.slice(6)
             
             if (data === "[DONE]") {
-              // 直接将最终内容添加到消息数组中
-              setMessages((prev) => [
-                ...prev,
-                { role: "assistant", content: accumulatedContent }
-              ])
-              // 重置 typing 状态（不清空内容，因为消息已经保存）
-              typing.reset()
+              hasReceivedDone = true
               break
             }
 
@@ -128,7 +139,27 @@ export function ChatWindow({ chatId, model, onModelChange }: ChatWindowProps) {
             }
           }
         }
+        
+        if (hasReceivedDone) break
       }
+
+      // 将助手消息添加到本地消息数组
+      if (accumulatedContent) {
+        setMessages((prev) => [
+          ...prev,
+          { role: "assistant", content: accumulatedContent }
+        ])
+      }
+      
+      // 重置 typing 状态
+      typing.reset()
+      
+      // 关键修复：从服务器重新获取完整消息列表，确保同步
+      // 延迟一下确保服务器完成保存
+      setTimeout(() => {
+        fetchChat()
+      }, 500)
+      
     } catch (error) {
       console.error("Chat error:", error)
       typing.setErrorText("发送失败，请重试")
