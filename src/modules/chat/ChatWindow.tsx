@@ -20,6 +20,7 @@ export function ChatWindow({ chatId, model, onModelChange }: ChatWindowProps) {
   const [messages, setMessages] = React.useState<Message[]>([])
   const [isLoading, setLoading] = React.useState(false)
   const [currentChatId, setCurrentChatId] = React.useState(chatId)
+  const [lastAssistantMessage, setLastAssistantMessage] = React.useState("")
   const typing = useTyping("")
   const messagesEndRef = React.useRef<HTMLDivElement>(null)
 
@@ -56,12 +57,13 @@ export function ChatWindow({ chatId, model, onModelChange }: ChatWindowProps) {
     e.preventDefault()
     if (!input.trim() || isLoading) return
 
-    const userMessage: Message = { role: "user", content: input.trim() }
-    setMessages((prev) => [...prev, userMessage])
+    const userMessageContent = input.trim()
     setInput("")
     setLoading(true)
-    // 重置 typing 并设置初始消息
     typing.reset()
+    
+    // 先添加用户消息
+    setMessages((prev) => [...prev, { role: "user", content: userMessageContent }])
 
     try {
       const response = await fetch("/api/chat", {
@@ -70,7 +72,7 @@ export function ChatWindow({ chatId, model, onModelChange }: ChatWindowProps) {
         body: JSON.stringify({
           chatId: currentChatId === "new" ? undefined : currentChatId,
           model,
-          message: userMessage.content,
+          message: userMessageContent,
         }),
       })
 
@@ -82,6 +84,8 @@ export function ChatWindow({ chatId, model, onModelChange }: ChatWindowProps) {
       const decoder = new TextDecoder()
 
       if (!reader) throw new Error("No response body")
+      
+      let chatIdFromResponse: string | null = null
 
       while (true) {
         const { done, value } = await reader.read()
@@ -95,14 +99,13 @@ export function ChatWindow({ chatId, model, onModelChange }: ChatWindowProps) {
             const data = line.slice(6)
             
             if (data === "[DONE]") {
-              // 保存最终内容
+              // 保存最终内容并添加助手消息
               const finalContent = typing.text
+              setLastAssistantMessage(finalContent)
               
-              // 使用 setTimeout 确保状态更新完成后再结束流式
+              // 使用 setTimeout 确保状态更新完成
               setTimeout(() => {
-                // 在 setTimeout 中添加消息并结束流式
                 setMessages((prev) => {
-                  // 检查最后一条消息是否已经是助手消息，避免重复
                   const lastMsg = prev[prev.length - 1]
                   if (lastMsg && lastMsg.role === 'assistant' && lastMsg.content === finalContent) {
                     return prev

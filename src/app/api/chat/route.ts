@@ -79,28 +79,30 @@ export async function POST(req: NextRequest) {
     }
 
     let chat
+    let messages: any[] = []
     
     if (chatId) {
       chat = await prisma.chat.findUnique({
         where: { id: chatId, userId: user.id }
       })
-    }
-
-    if (chat) {
-      const messages = chat.messages as any[]
-      messages.push({ role: "user", content: message })
       
-      chat = await prisma.chat.update({
-        where: { id: chatId },
-        data: {
-          messages,
-          model,
-          updatedAt: new Date(),
-        }
-      })
-    } else {
+      if (chat) {
+        messages = [...(chat.messages as any[]), { role: "user", content: message }]
+        
+        chat = await prisma.chat.update({
+          where: { id: chatId },
+          data: {
+            messages,
+            model,
+            updatedAt: new Date(),
+          }
+        })
+      }
+    }
+    
+    if (!chat) {
       const title = message.slice(0, 30) + (message.length > 30 ? "..." : "")
-      const messages = [{ role: "system", content: FORTUNE_SYSTEM_PROMPT }, { role: "user", content: message }]
+      messages = [{ role: "system", content: FORTUNE_SYSTEM_PROMPT }, { role: "user", content: message }]
       
       chat = await prisma.chat.create({
         data: {
@@ -112,7 +114,7 @@ export async function POST(req: NextRequest) {
       })
     }
 
-    const messages = chat.messages as any[]
+    messages = chat.messages as any[]
 
     const encoder = new TextEncoder()
     
@@ -136,10 +138,13 @@ export async function POST(req: NextRequest) {
 
           controller.enqueue(encoder.encode("data: [DONE]\n\n"))
 
+          // 移除可能重复的助手消息（如果有的话）
+          const cleanMessages = messages.filter((m: any) => m.role !== 'assistant')
+          
           await prisma.chat.update({
             where: { id: chat.id },
             data: {
-              messages: [...messages, { role: "assistant", content: fullResponse }],
+              messages: [...cleanMessages, { role: "assistant", content: fullResponse }],
             }
           })
         } catch (error) {
