@@ -76,6 +76,12 @@ export function ChatWindow({ chatId, model, onModelChange }: ChatWindowProps) {
         }),
       })
 
+      // 从响应头获取新的 chatId 并更新状态
+      const newChatId = response.headers.get("X-Chat-Id")
+      if (newChatId && currentChatId === "new") {
+        setCurrentChatId(newChatId)
+      }
+
       if (!response.ok) {
         throw new Error("Failed to send message")
       }

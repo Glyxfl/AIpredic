@@ -138,13 +138,16 @@ export async function POST(req: NextRequest) {
 
           controller.enqueue(encoder.encode("data: [DONE]\n\n"))
 
-          // 移除可能重复的助手消息（如果有的话）
-          const cleanMessages = messages.filter((m: any) => m.role !== 'assistant')
+          // 只过滤掉重复的助手消息（流式传输过程中可能添加的），保留其他助手消息
+          const lastMessage = messages[messages.length - 1]
+          const filteredMessages = messages.filter((m: any) =>
+            !(m.role === 'assistant' && m === lastMessage && m.content !== fullResponse)
+          )
           
           await prisma.chat.update({
             where: { id: chat.id },
             data: {
-              messages: [...cleanMessages, { role: "assistant", content: fullResponse }],
+              messages: [...filteredMessages, { role: "assistant", content: fullResponse }],
             }
           })
         } catch (error) {
@@ -153,16 +156,17 @@ export async function POST(req: NextRequest) {
         } finally {
           controller.close()
         }
-      }
-    })
+    }
+  })
 
-    return new Response(stream, {
-      headers: {
-        "Content-Type": "text/event-stream",
-        "Cache-Control": "no-cache",
-        "Connection": "keep-alive",
-      }
-    })
+  return new Response(stream, {
+    headers: {
+      "Content-Type": "text/event-stream",
+      "Cache-Control": "no-cache",
+      "Connection": "keep-alive",
+      "X-Chat-Id": chat.id,
+    }
+  })
   } catch (error) {
     console.error("Chat API error:", error)
     return NextResponse.json({ error: "服务器错误" }, { status: 500 })
