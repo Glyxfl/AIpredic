@@ -16,13 +16,14 @@ export interface ChatPreview {
   updatedAt: string
 }
 
-export function useUserChats(): SWRResponse<ChatPreview[], any> {
-  const { data, error, mutate } = useSWR<ChatPreview[]>("/api/chats", fetcher)
-  
+export function useUserChats() {
+  const { data, error, isValidating, mutate } = useSWR<ChatPreview[]>("/api/chats", fetcher)
+   
   return {
     data,
     error,
     isLoading: !error && !data,
+    isValidating,
     mutate,
   }
 }
