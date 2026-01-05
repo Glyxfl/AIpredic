@@ -6,6 +6,9 @@ import { streamChatCompletion } from "@/lib/openai"
 import { streamClaudeCompletion } from "@/lib/claude"
 import { FORTUNE_SYSTEM_PROMPT, DEFAULT_MODEL } from "@/lib/constants"
 
+// 强制动态渲染，因为使用了 getServerSession
+export const dynamic = 'force-dynamic'
+
 export async function POST(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions)

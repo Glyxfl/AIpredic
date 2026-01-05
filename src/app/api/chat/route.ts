@@ -7,6 +7,9 @@ import { streamClaudeCompletion } from "@/lib/claude"
 import { streamMoonshotCompletion } from "@/lib/moonshot"
 import { FORTUNE_SYSTEM_PROMPT, ModelType } from "@/lib/constants"
 
+// 强制动态渲染，因为使用了 getServerSession
+export const dynamic = 'force-dynamic'
+
 export async function GET(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
