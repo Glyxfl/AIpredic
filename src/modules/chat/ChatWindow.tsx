@@ -41,7 +41,7 @@ export function ChatWindow({ chatId, model, onModelChange }: ChatWindowProps) {
   const fetchChat = React.useCallback(async () => {
     const idToFetch = currentChatIdRef.current
     if (!idToFetch || idToFetch === "new") return
-    
+
     // 防止并发请求
     if (isFetchingRef.current) return
     isFetchingRef.current = true
@@ -62,8 +62,14 @@ export function ChatWindow({ chatId, model, onModelChange }: ChatWindowProps) {
     }
   }, [model, onModelChange])
 
+  // 独立的 effect 处理 chatId 变化，只在聊天ID真正改变时才获取
+  // 移除对 model 的依赖，避免模型切换时重复获取
   React.useEffect(() => {
-    fetchChat()
+    if (chatId && chatId !== "new") {
+      fetchChat()
+    } else if (chatId === "new") {
+      setMessages([])
+    }
   }, [chatId, fetchChat])
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -154,11 +160,11 @@ export function ChatWindow({ chatId, model, onModelChange }: ChatWindowProps) {
       // 重置 typing 状态
       typing.reset()
       
-      // 关键修复：从服务器重新获取完整消息列表，确保同步
-      // 延迟一下确保服务器完成保存
+      // 从服务器重新获取完整消息列表，确保同步
+      // 等待一段时间确保服务器完成保存
       setTimeout(() => {
         fetchChat()
-      }, 500)
+      }, 300)
       
     } catch (error) {
       console.error("Chat error:", error)
@@ -186,9 +192,9 @@ export function ChatWindow({ chatId, model, onModelChange }: ChatWindowProps) {
 
         {messages
           .filter((msg) => msg.role !== 'system')
-          .map((msg, idx) => (
+          .map((msg) => (
             <MessageBubble
-              key={idx}
+              key={`${msg.role}-${msg.content.slice(0, 20)}-${msg.content.length}`}
               role={msg.role as 'user' | 'assistant'}
               content={msg.content}
             />
