@@ -139,22 +139,14 @@ export async function POST(req: NextRequest) {
           controller.enqueue(encoder.encode("data: [DONE]\n\n"))
 
           // 保存完整的助手消息到数据库
-          // 过滤掉已存在的部分助手消息（如果有的话）
-          const messagesToSave = messages.filter((m: any) => {
-            // 只保留非助手消息
-            if (m.role !== 'assistant') return true
-            // 如果是助手消息，检查它是否与完整响应匹配
-            // 如果匹配则替换，否则保留（以防有之前的历史消息）
-            return m.content !== fullResponse
-          })
-
-          // 添加完整的助手消息
-          messagesToSave.push({ role: "assistant", content: fullResponse })
+          // 不应该过滤掉任何历史消息，直接将完整的消息数组保存
+          // messages 数组已经包含了所有历史消息（包括之前的助手回复）
+          // 现在只需要追加最新的助手消息
 
           await prisma.chat.update({
             where: { id: chat.id },
             data: {
-              messages: messagesToSave,
+              messages: messages,
             }
           })
         } catch (error) {
