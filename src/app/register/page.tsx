@@ -1,7 +1,7 @@
-import { LoginForm } from "@/modules/auth/LoginForm"
+import { RegisterForm } from "@/modules/auth/RegisterForm"
 import Link from "next/link"
 
-export default function LoginPage() {
+export default function RegisterPage() {
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
       <div className="w-full max-w-md">
@@ -15,21 +15,21 @@ export default function LoginPage() {
         </div>
 
         <div className="card-glow p-8">
-          <LoginForm />
+          <RegisterForm />
         </div>
 
         <p className="text-center text-sm text-slate-500 mt-6">
-          还没有账号？{" "}
+          已有账号？{" "}
           <Link
-            href="/register"
+            href="/login"
             className="text-primary hover:underline font-medium"
           >
-            立即注册
+            立即登录
           </Link>
         </p>
 
         <p className="text-center text-xs text-slate-400 mt-4">
-          登录即表示同意我们的服务条款
+          注册即表示同意我们的服务条款
         </p>
       </div>
     </div>
