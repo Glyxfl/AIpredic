@@ -20,7 +20,6 @@ export function ChatWindow({ chatId, model, onModelChange }: ChatWindowProps) {
   const [messages, setMessages] = React.useState<Message[]>([])
   const [isLoading, setLoading] = React.useState(false)
   const [currentChatId, setCurrentChatId] = React.useState(chatId)
-  const [lastAssistantMessage, setLastAssistantMessage] = React.useState("")
   const typing = useTyping("")
   const messagesEndRef = React.useRef<HTMLDivElement>(null)
 
@@ -90,9 +89,9 @@ export function ChatWindow({ chatId, model, onModelChange }: ChatWindowProps) {
       const decoder = new TextDecoder()
 
       if (!reader) throw new Error("No response body")
-      
-      let chatIdFromResponse: string | null = null
 
+      let accumulatedContent = ""
+      
       while (true) {
         const { done, value } = await reader.read()
         if (done) break
@@ -105,22 +104,13 @@ export function ChatWindow({ chatId, model, onModelChange }: ChatWindowProps) {
             const data = line.slice(6)
             
             if (data === "[DONE]") {
-              // 保存最终内容并添加助手消息
-              const finalContent = typing.text
-              setLastAssistantMessage(finalContent)
-              
-              // 使用 setTimeout 确保状态更新完成
-              setTimeout(() => {
-                setMessages((prev) => {
-                  const lastMsg = prev[prev.length - 1]
-                  if (lastMsg && lastMsg.role === 'assistant' && lastMsg.content === finalContent) {
-                    return prev
-                  }
-                  return [...prev, { role: "assistant", content: finalContent }]
-                })
-                typing.finish()
-              }, 0)
-              
+              // 直接将最终内容添加到消息数组中
+              setMessages((prev) => [
+                ...prev,
+                { role: "assistant", content: accumulatedContent }
+              ])
+              // 重置 typing 状态（不清空内容，因为消息已经保存）
+              typing.reset()
               break
             }
 
@@ -128,6 +118,7 @@ export function ChatWindow({ chatId, model, onModelChange }: ChatWindowProps) {
               const parsed = JSON.parse(data)
               if (parsed.token) {
                 typing.appendToken(parsed.token)
+                accumulatedContent += parsed.token
               }
               if (parsed.error) {
                 typing.setErrorText(parsed.error)
