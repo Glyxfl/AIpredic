@@ -94,12 +94,16 @@ export function ChatWindow({ chatId, model, onModelChange }: ChatWindowProps) {
             const data = line.slice(6)
             
             if (data === "[DONE]") {
-              // 先添加消息，再结束流式，避免闪烁
+              // 先添加消息，再延迟结束流式，避免闪烁
+              const finalContent = typing.text
               setMessages((prev) => [
                 ...prev,
-                { role: "assistant", content: typing.text },
+                { role: "assistant", content: finalContent },
               ])
-              typing.finish()
+              // 使用 setTimeout 确保消息渲染完成后再结束流式
+              setTimeout(() => {
+                typing.finish()
+              }, 0)
               
               break
             }
