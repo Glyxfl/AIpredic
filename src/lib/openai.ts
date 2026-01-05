@@ -16,7 +16,7 @@ export async function streamChatCompletion(
   const openai = createOpenAI()
   const stream = await openai.chat.completions.create({
     model,
-    messages,
+    messages: messages as any,
     stream: true,
   })
 
