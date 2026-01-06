@@ -5,7 +5,12 @@ import { prisma } from "@/lib/prisma"
 import { streamChatCompletion } from "@/lib/openai"
 import { streamClaudeCompletion } from "@/lib/claude"
 import { streamMoonshotCompletion } from "@/lib/moonshot"
-import { FORTUNE_SYSTEM_PROMPT, ModelType } from "@/lib/constants"
+import { FORTUNE_SYSTEM_PROMPT, ModelType, SSE_EVENT_MESSAGE, SSE_DONE_SIGNAL } from "@/lib/constants"
+
+// Token转义函数，用于SSE传输
+function escapeSSE(token: string): string {
+  return JSON.stringify(token).slice(1, -1)  // 去掉JSON字符串的引号
+}
 
 // 强制动态渲染，因为使用了 getServerSession
 export const dynamic = 'force-dynamic'
@@ -118,14 +123,21 @@ export async function POST(req: NextRequest) {
 
     const encoder = new TextEncoder()
     
+    // 生成消息ID
+    const messageId = crypto.randomUUID()
+    
     const stream = new ReadableStream({
       async start(controller) {
         try {
           let fullResponse = ""
           
+          // 发送消息开始事件，携带messageId
+          controller.enqueue(encoder.encode(`event: ${SSE_EVENT_MESSAGE}\ndata: {"id":"${messageId}"}\n\n`))
+          
           const onData = (token: string) => {
             fullResponse += token
-            controller.enqueue(encoder.encode(`data: {"token": "${token}"}\n\n`))
+            const escapedToken = escapeSSE(token)
+            controller.enqueue(encoder.encode(`data: {"token":"${escapedToken}"}\n\n`))
           }
 
           if (model === ModelType.CLAUDE_35) {
@@ -136,22 +148,22 @@ export async function POST(req: NextRequest) {
             await streamChatCompletion(messages, model, onData)
           }
 
-          controller.enqueue(encoder.encode("data: [DONE]\n\n"))
+          // 发送完成信号
+          controller.enqueue(encoder.encode(`event: ${SSE_EVENT_MESSAGE}\ndata: ${SSE_DONE_SIGNAL}\n\n`))
 
-          // 保存完整的助手消息到数据库
-          // 不应该过滤掉任何历史消息，直接将完整的消息数组保存
-          // messages 数组已经包含了所有历史消息（包括之前的助手回复）
-          // 现在只需要追加最新的助手消息
-
+          // 保存完整的助手消息到数据库，追加助手回复
+          const assistantMessage = { id: messageId, role: "assistant", content: fullResponse, timestamp: Date.now() }
+          const updatedMessages = [...messages, assistantMessage]
+          
           await prisma.chat.update({
             where: { id: chat.id },
             data: {
-              messages: messages,
+              messages: updatedMessages,
             }
           })
         } catch (error) {
           console.error("Stream error:", error)
-          controller.enqueue(encoder.encode("data: {\"error\": \"处理失败\"}\n\n"))
+          controller.enqueue(encoder.encode(`event: error\ndata: {"error": "处理失败"}\n\n`))
         } finally {
           controller.close()
         }

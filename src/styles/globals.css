@@ -2,19 +2,241 @@
 @tailwind components;
 @tailwind utilities;
 
-@layer base {
-  :root {
-    --radius: 0.5rem;
-  }
+/* ==================== 神秘东方风格配色变量 ==================== */
+:root {
+  /* ==================== 主题配色方案 ==================== */
+  --color-blue: #3554BD;             /* 蓝色 */
+  --color-deep-purple: #291F5E;      /* 深紫色 */
+  --color-purple: #80439F;           /* 紫色 */
+  --color-pink-light: #FA7ABE;       /* 粉紫色 */
+  --color-pink: #E144AD;             /* 粉色 */
   
-  body {
-    @apply bg-gradient-to-br from-amber-50/50 via-white/50 to-rose-50/50;
-    @apply min-h-screen text-slate-800;
+  /* 主色调 - 深邃神秘 */
+  --color-primary: #8b5cf6;          /* 紫色 - 神秘 */
+  --color-primary-dark: #7c3aed;
+   
+  /* 点缀色 - 金色东方 */
+  --color-accent: #f59e0b;           /* 金色 - 运势 */
+  --color-accent-light: #fbbf24;
+   
+  /* 背景色 - 渐变层次 */
+  --bg-dark: #0f0a1f;                /* 深紫黑 */
+  --bg-medium: #1e1b2e;              /* 暗紫 */
+  --bg-light: #2d2a3d;               /* 浅暗紫 */
+   
+  /* 文本色 */
+  --text-primary: #f5f5f5;
+  --text-secondary: #a1a1aa;
+  --text-muted: #71717a;
+   
+  --radius: 0.75rem;
+}
+
+/* ==================== 暗色主题支持 ==================== */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0f0a1f;
+    --foreground: #f5f5f5;
   }
 }
 
+/* ==================== 全局样式 ==================== */
+@layer base {
+  body {
+    @apply min-h-screen text-slate-200;
+    background: 
+      radial-gradient(ellipse at 20% 20%, rgba(139, 92, 246, 0.15) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 80%, rgba(245, 158, 11, 0.1) 0%, transparent 50%),
+      radial-gradient(ellipse at 50% 50%, rgba(30, 27, 46, 0.8) 0%, #0f0a1f 100%);
+    background-attachment: fixed;
+    color: var(--foreground);
+  }
+}
+
+/* ==================== 粒子效果背景层 ==================== */
+.particle-bg {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.particle {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background: rgba(245, 158, 11, 0.6);
+  border-radius: 50%;
+  animation: float 8s infinite ease-in-out;
+  box-shadow: 0 0 10px rgba(245, 158, 11, 0.4);
+}
+
+/* ==================== 动画关键帧 ==================== */
+@keyframes float {
+  0%, 100% { 
+    transform: translateY(0) scale(1); 
+    opacity: 0.6; 
+  }
+  50% { 
+    transform: translateY(-20px) scale(1.2); 
+    opacity: 1; 
+  }
+}
+
+@keyframes shimmer {
+  to {
+    background-position: 200% center;
+  }
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    opacity: 0.6;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.1);
+  }
+}
+
+@keyframes messageSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideFromRight {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes rotate {
+  from { 
+    transform: rotate(0deg); 
+  }
+  to { 
+    transform: rotate(360deg); 
+  }
+}
+
+@keyframes ripple {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(2);
+    opacity: 0;
+  }
+}
+
+/* ==================== 实用工具类 ==================== */
 @layer utilities {
   .text-balance {
     text-wrap: balance;
+  }
+  
+  /* 隐藏滚动栏 */
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  
+  /* 紫色系纯色文字 */
+  .text-gradient-mystical {
+    background: none;
+    -webkit-background-clip: unset;
+    background-clip: unset;
+    -webkit-text-fill-color: unset;
+    color: #E144AD; /* 粉色 */
+  }
+  
+  /* 神秘发光文字 - 紫色系 */
+  .text-glow {
+    text-shadow: 0 0 20px rgba(128, 63, 159, 0.5);
+  }
+  
+  /* 毛玻璃效果增强 - 紫色系 */
+  .glass-mystical {
+    @apply backdrop-blur-xl bg-[#1e1b2e]/80;
+    border: 1px solid rgba(128, 63, 159, 0.2);
+  }
+  
+  /* 渐变边框 - 紫色系 */
+  .border-gradient-mystical {
+    border: 1px solid transparent;
+    background:
+      linear-gradient(#1e1b2e, #1e1b2e) padding-box,
+      linear-gradient(135deg, #291F5E, #80439F, #FA7ABE) border-box;
+  }
+}
+
+/* ==================== 全局滚动栏样式 ==================== */
+@layer components {
+  /* 基础滚动栏样式 - 紫色与深色背景协调 */
+  .scrollbar-mystical-custom::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  
+  .scrollbar-mystical-custom::-webkit-scrollbar-track {
+    background: rgba(30, 27, 46, 0.8);
+    border-radius: 4px;
+  }
+  
+  .scrollbar-mystical-custom::-webkit-scrollbar-thumb {
+    background: rgba(128, 63, 159, 0.3);
+    border-radius: 4px;
+    transition: background 0.2s ease;
+  }
+  
+  .scrollbar-mystical-custom::-webkit-scrollbar-thumb:hover {
+    background: rgba(128, 63, 159, 0.5);
+  }
+  
+  .scrollbar-mystical-custom::-webkit-scrollbar-thumb:active {
+    background: rgba(128, 63, 159, 0.7);
+  }
+  
+  /* 紫色版本滚动栏 */
+  .scrollbar-purple-custom::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  
+  .scrollbar-purple-custom::-webkit-scrollbar-track {
+    background: rgba(30, 27, 46, 0.8);
+    border-radius: 4px;
+  }
+  
+  .scrollbar-purple-custom::-webkit-scrollbar-thumb {
+    background: rgba(128, 63, 159, 0.3);
+    border-radius: 4px;
+    transition: background 0.2s ease;
+  }
+  
+  .scrollbar-purple-custom::-webkit-scrollbar-thumb:hover {
+    background: rgba(128, 63, 159, 0.5);
+  }
+  
+  .scrollbar-purple-custom::-webkit-scrollbar-thumb:active {
+    background: rgba(128, 63, 159, 0.7);
   }
 }

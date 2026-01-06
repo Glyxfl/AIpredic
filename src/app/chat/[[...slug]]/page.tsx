@@ -41,26 +41,36 @@ export default function ChatPage() {
   const chatId = params?.slug?.[0] || "new"
 
   return (
-    <div className="flex h-screen overflow-hidden">
+    <div className="flex h-screen overflow-hidden relative">
+      {/* 背景光晕装饰 */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-px bg-gradient-to-r from-transparent via-theme-purple/20 to-transparent" />
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-theme-purple/10 rounded-full blur-3xl" />
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-theme-pinkLight/10 rounded-full blur-3xl" />
+      </div>
+
       <Sidebar
         isOpen={isSidebarOpen}
         onClose={() => setSidebarOpen(false)}
       />
 
-      <div className="flex-1 flex flex-col min-w-0">
-        <header className="border-b border-amber-100 bg-white/80 backdrop-blur-sm px-4 py-4">
+      <div className="flex-1 flex flex-col min-w-0 relative z-10">
+        <header className="
+          border-b border-white/10
+          bg-[#1e1b2e]/80 backdrop-blur-xl px-4 py-4
+        ">
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-3 flex-1">
               <Button
                 variant="ghost"
                 size="icon"
                 onClick={() => setSidebarOpen(!isSidebarOpen)}
-                className="lg:hidden"
+                className="lg:hidden text-slate-300 hover:text-white hover:bg-white/10"
               >
                 <Menu className="w-5 h-5" />
               </Button>
-              <div className="text-gradient font-semibold text-lg">
-                ZGSM-AI
+              <div className="text-gradient-mystical font-bold text-xl tracking-wide">
+                知命阁 · AI
               </div>
             </div>
 
@@ -69,12 +79,13 @@ export default function ChatPage() {
                 models={MODELS}
                 value={model}
                 onChange={handleModelChange}
+                className="bg-[#2d2a3d]/80 border border-white/10"
               />
             </div>
           </div>
         </header>
 
-        <main className="flex-1 overflow-hidden">
+        <main className="flex-1 overflow-hidden relative">
           <ChatWindow
             chatId={chatId}
             model={model}

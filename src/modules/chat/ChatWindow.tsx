@@ -3,6 +3,7 @@ import { useSWRConfig } from "swr"
 import { Send } from "lucide-react"
 import { MessageBubble } from "./MessageBubble"
 import { useTyping } from "./useTyping"
+import { useWheelScroll } from "./useWheelScroll"
 import { Message } from "./types"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -24,6 +25,10 @@ export function ChatWindow({ chatId, model, onModelChange }: ChatWindowProps) {
   const typing = useTyping("")
   const messagesEndRef = React.useRef<HTMLDivElement>(null)
   const isFetchingRef = React.useRef(false)
+  const messagesContainerRef = React.useRef<HTMLDivElement>(null)
+
+  // 使用自定义滚轮滚动 hook
+  useWheelScroll(messagesContainerRef)
 
   const scrollToBottom = React.useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
@@ -113,6 +118,7 @@ export function ChatWindow({ chatId, model, onModelChange }: ChatWindowProps) {
       if (!reader) throw new Error("No response body")
 
       let accumulatedContent = ""
+      let messageId = ""
       let hasReceivedDone = false
       
       while (true) {
@@ -123,6 +129,12 @@ export function ChatWindow({ chatId, model, onModelChange }: ChatWindowProps) {
         const lines = chunk.split("\n")
 
         for (const line of lines) {
+          // 解析事件类型
+          let eventType = ""
+          if (line.startsWith("event: ")) {
+            eventType = line.slice(7)
+          }
+          
           if (line.startsWith("data: ")) {
             const data = line.slice(6)
             
@@ -132,7 +144,14 @@ export function ChatWindow({ chatId, model, onModelChange }: ChatWindowProps) {
             }
 
             try {
+              // 解析JSON数据
               const parsed = JSON.parse(data)
+              
+              // 处理消息开始事件，获取messageId
+              if (eventType === "message" && parsed.id) {
+                messageId = parsed.id
+              }
+              
               if (parsed.token) {
                 typing.appendToken(parsed.token)
                 accumulatedContent += parsed.token
@@ -141,7 +160,10 @@ export function ChatWindow({ chatId, model, onModelChange }: ChatWindowProps) {
                 typing.setErrorText(parsed.error)
               }
             } catch (e) {
-              console.error("Failed to parse SSE data:", e)
+              // 处理非JSON数据（如[DONE]信号）
+              if (data !== "[DONE]") {
+                console.error("Failed to parse SSE data:", e)
+              }
             }
           }
         }
@@ -149,11 +171,11 @@ export function ChatWindow({ chatId, model, onModelChange }: ChatWindowProps) {
         if (hasReceivedDone) break
       }
 
-      // 将助手消息添加到本地消息数组
+      // 将助手消息添加到本地消息数组，使用messageId
       if (accumulatedContent) {
         setMessages((prev) => [
           ...prev,
-          { role: "assistant", content: accumulatedContent }
+          { id: messageId, role: "assistant", content: accumulatedContent, timestamp: Date.now() }
         ])
       }
       
@@ -176,14 +198,14 @@ export function ChatWindow({ chatId, model, onModelChange }: ChatWindowProps) {
 
   return (
     <div className="flex flex-col h-full">
-      <div className="flex-1 overflow-y-auto scrollbar-amber p-6">
+      <div ref={messagesContainerRef} className="flex-1 overflow-y-auto scrollbar-mystical-custom no-scrollbar p-6">
         {messages.length === 0 && !isLoading && (
           <div className="flex items-center justify-center h-full text-center">
-            <div className="card-glow p-8 max-w-md">
-              <div className="text-gradient text-xl font-semibold mb-2">
+            <div className="card-mystical p-8 max-w-md">
+              <div className="text-gradient-mystical text-xl font-semibold mb-2">
                 开始对话
               </div>
-              <p className="text-slate-600 text-sm">
+              <p className="text-slate-400 text-sm">
                 向算命先生询问运势问题，我会用温暖简洁的语言为您解答
               </p>
             </div>
@@ -194,7 +216,8 @@ export function ChatWindow({ chatId, model, onModelChange }: ChatWindowProps) {
           .filter((msg) => msg.role !== 'system')
           .map((msg) => (
             <MessageBubble
-              key={`${msg.role}-${msg.content.slice(0, 20)}-${msg.content.length}`}
+              key={msg.id || `${msg.role}-${msg.content.slice(0, 20)}-${msg.content.length}`}
+              id={msg.id}
               role={msg.role as 'user' | 'assistant'}
               content={msg.content}
             />
@@ -219,19 +242,20 @@ export function ChatWindow({ chatId, model, onModelChange }: ChatWindowProps) {
         <div ref={messagesEndRef} />
       </div>
 
-      <form onSubmit={handleSubmit} className="p-6 border-t border-amber-100">
+      <form onSubmit={handleSubmit} className="p-6 border-t border-white/10 bg-[#1e1b2e]/50">
         <div className="flex gap-3">
           <Input
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder="输入您的问题..."
             disabled={isLoading}
-            className="flex-1"
+            className="flex-1 input-mystical"
           />
           <Button
             type="submit"
             disabled={!input.trim() || isLoading}
             size="icon"
+            className="btn-mystical"
           >
             <Send className="w-4 h-4" />
           </Button>

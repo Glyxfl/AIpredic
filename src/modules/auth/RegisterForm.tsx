@@ -59,7 +59,7 @@ export function RegisterForm({ className }: RegisterFormProps) {
     <form onSubmit={handleSubmit} className={cn("w-full max-w-md space-y-6", className)}>
       <div className="space-y-4">
         <div className="space-y-2">
-          <label htmlFor="email" className="text-sm font-medium text-slate-700">
+          <label htmlFor="email" className="text-sm font-medium text-slate-300">
             邮箱
           </label>
           <Input
@@ -70,11 +70,12 @@ export function RegisterForm({ className }: RegisterFormProps) {
             placeholder="your@email.com"
             required
             disabled={isLoading}
+            className="input-mystical"
           />
         </div>
 
         <div className="space-y-2">
-          <label htmlFor="password" className="text-sm font-medium text-slate-700">
+          <label htmlFor="password" className="text-sm font-medium text-slate-300">
             密码
           </label>
           <Input
@@ -86,11 +87,12 @@ export function RegisterForm({ className }: RegisterFormProps) {
             required
             minLength={6}
             disabled={isLoading}
+            className="input-mystical"
           />
         </div>
 
         <div className="space-y-2">
-          <label htmlFor="confirmPassword" className="text-sm font-medium text-slate-700">
+          <label htmlFor="confirmPassword" className="text-sm font-medium text-slate-300">
             确认密码
           </label>
           <Input
@@ -102,17 +104,18 @@ export function RegisterForm({ className }: RegisterFormProps) {
             required
             minLength={6}
             disabled={isLoading}
+            className="input-mystical"
           />
         </div>
       </div>
 
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-xl text-sm">
+        <div className="bg-red-500/20 border border-red-500/30 text-red-400 px-4 py-3 rounded-xl text-sm">
           {error}
         </div>
       )}
 
-      <Button type="submit" className="w-full" disabled={isLoading}>
+      <Button type="submit" className="w-full btn-mystical" disabled={isLoading}>
         {isLoading ? "注册中..." : "注册"}
       </Button>
     </form>

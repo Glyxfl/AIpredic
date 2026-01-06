@@ -2,7 +2,6 @@ import * as React from "react"
 import { useSession, signOut } from "next-auth/react"
 import { LogOut, User } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { cn } from "@/lib/utils"
 
 export function UserBadge() {
   const { data: session } = useSession()
@@ -15,7 +14,7 @@ export function UserBadge() {
   return (
     <div className="flex items-center gap-3">
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium text-slate-800 truncate">
+        <p className="text-sm font-medium text-slate-200 truncate">
           {displayName}
         </p>
         <p className="text-xs text-slate-500 truncate">{email}</p>
@@ -24,7 +23,7 @@ export function UserBadge() {
         variant="ghost"
         size="icon"
         onClick={() => signOut({ callbackUrl: "/login" })}
-        className="flex-shrink-0"
+        className="flex-shrink-0 text-slate-400 hover:text-white hover:bg-white/10"
         title="退出登录"
       >
         <LogOut className="w-4 h-4" />

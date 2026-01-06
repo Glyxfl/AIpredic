@@ -13,7 +13,7 @@ export function NewChatButton() {
   return (
     <Button
       onClick={handleClick}
-      variant="outline"
+      variant="ghost-mystical"
       className="w-full justify-start gap-2"
     >
       <Plus className="w-4 h-4" />

@@ -1,25 +1,181 @@
 @layer components {
+  /* ==================== 神秘卡片样式 ==================== */
+  .card-mystical {
+    @apply relative overflow-hidden;
+    background: linear-gradient(135deg,
+      rgba(30, 27, 46, 0.95) 0%,
+      rgba(45, 42, 61, 0.9) 100%);
+    border: 1px solid rgba(128, 63, 159, 0.2);
+    border-radius: 1rem;
+    backdrop-filter: blur(20px);
+    box-shadow:
+      0 4px 30px rgba(0, 0, 0, 0.3),
+      0 0 40px rgba(128, 63, 159, 0.05),
+      inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  }
+  
+  .card-mystical::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg,
+      transparent 0%,
+      rgba(128, 63, 159, 0.08) 50%,
+      transparent 100%);
+    pointer-events: none;
+  }
+  
+  .card-mystical::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: conic-gradient(
+      from 0deg,
+      transparent 0deg,
+      rgba(128, 63, 159, 0.03) 60deg,
+      transparent 120deg
+    );
+    animation: rotate 20s linear infinite;
+    pointer-events: none;
+  }
+  
+  /* 卡片悬停光晕效果 */
+  .card-mystical:hover {
+    border-color: rgba(128, 63, 159, 0.4);
+    box-shadow:
+      0 8px 40px rgba(0, 0, 0, 0.4),
+      0 0 60px rgba(128, 63, 159, 0.1),
+      0 0 100px rgba(128, 63, 159, 0.05),
+      inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    transform: translateY(-2px);
+    transition: all 0.3s ease;
+  }
+
+  /* ==================== 原有卡片样式（保留向后兼容） ==================== */
   .card-glow {
     @apply bg-gradient-to-br from-amber-50 via-white to-rose-50
            border border-amber-100 rounded-2xl shadow-lg;
   }
   
+  /* ==================== 神秘按钮样式 ==================== */
+  .btn-mystical {
+    @apply px-6 py-3 rounded-xl font-medium transition-all duration-300;
+    @apply bg-gradient-to-r from-theme-purple to-theme-pink;
+    @apply text-white shadow-lg shadow-theme-purple/25;
+    @apply hover:shadow-xl hover:shadow-theme-purple/40;
+    @apply hover:scale-[1.02] active:scale-[0.98];
+    @apply disabled:opacity-50 disabled:cursor-not-allowed;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .btn-mystical::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg,
+      transparent,
+      rgba(255, 255, 255, 0.2),
+      transparent);
+    transform: translateX(-100%);
+    transition: transform 0.5s;
+  }
+  
+  .btn-mystical:hover::before {
+    transform: translateX(100%);
+  }
+  
+  /* 波纹效果 */
+  .btn-mystical::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle, rgba(255,255,255,0.3) 0%, transparent 70%);
+    opacity: 0;
+    transform: scale(0.8);
+    transition: opacity 0.3s, transform 0.3s;
+  }
+  
+  .btn-mystical:active::after {
+    opacity: 1;
+    transform: scale(1.2);
+    animation: ripple 0.4s ease-out;
+  }
+  
+  /* 幽灵按钮 */
+  .btn-ghost-mystical {
+    @apply px-4 py-2 rounded-xl border border-theme-purple/30;
+    @apply text-theme-pinkLight hover:bg-theme-purple/10;
+    @apply transition-all duration-300;
+    background: transparent;
+  }
+  
+  .btn-ghost-mystical:hover {
+    @apply border-theme-purple/60 bg-theme-purple/20;
+    box-shadow: 0 0 20px rgba(128, 63, 159, 0.2);
+    transform: translateY(-1px);
+  }
+
+  /* ==================== 原有按钮样式（保留向后兼容） ==================== */
   .btn-primary {
     @apply px-4 py-2 rounded-xl bg-amber-500 text-white
            hover:bg-amber-600 transition;
   }
   
+  /* ==================== 紫色系纯色文字 ==================== */
+  .text-gradient-mystical {
+    background: none;
+    -webkit-background-clip: unset;
+    background-clip: unset;
+    -webkit-text-fill-color: unset;
+    color: #E144AD; /* 粉色 */
+  }
+  
+  /* ==================== 原有文本渐变（保留向后兼容） ==================== */
   .text-gradient {
     @apply bg-clip-text text-transparent
            bg-gradient-to-r from-amber-600 to-rose-600;
   }
   
+  /* ==================== 输入框样式 ==================== */
+  .input-mystical {
+    @apply w-full px-4 py-3 rounded-xl;
+    @apply bg-[#2d2a3d]/80 border border-white/10;
+    @apply focus:border-theme-purple/50 focus:outline-none;
+    @apply text-slate-200 placeholder-slate-500;
+    @apply transition-all duration-300;
+    backdrop-filter: blur(10px);
+  }
+  
+  .input-mystical:focus {
+    @apply border-theme-purple/50;
+    box-shadow: 0 0 20px rgba(128, 63, 159, 0.1);
+  }
+  
+  /* ==================== 原有输入框样式（保留向后兼容） ==================== */
   .input-forum {
     @apply w-full px-4 py-3 rounded-xl border-2 border-amber-100
            focus:border-amber-400 focus:outline-none transition
            bg-white/50 backdrop-blur-sm;
   }
   
+  /* ==================== 滚动条样式 ==================== */
+  .scrollbar-mystical::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  .scrollbar-mystical::-webkit-scrollbar-track {
+    @apply bg-[#1e1b2e] rounded-full;
+  }
+  
+  .scrollbar-mystical::-webkit-scrollbar-thumb {
+    @apply bg-theme-purple/30 rounded-full hover:bg-theme-purple/50 transition;
+  }
+  
+  /* ==================== 原有滚动条样式（保留向后兼容） ==================== */
   .scrollbar-amber::-webkit-scrollbar {
     width: 6px;
   }
@@ -30,5 +186,124 @@
   
   .scrollbar-amber::-webkit-scrollbar-thumb {
     @apply bg-amber-200 rounded-full hover:bg-amber-300 transition;
+  }
+  
+  /* ==================== 消息气泡动画 ==================== */
+  .message-enter {
+    animation: messageSlideIn 0.4s ease-out forwards;
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  
+  .message-enter-active {
+    animation: messageSlideIn 0.4s ease-out forwards;
+  }
+  
+  /* 用户消息 - 从右侧滑入 */
+  .message-user {
+    animation: slideFromRight 0.3s ease-out;
+  }
+  
+  /* AI消息 - 带有轻微闪烁效果 */
+  .message-ai {
+    animation: messageSlideIn 0.4s ease-out;
+  }
+  
+  /* 悬停效果 - 卡片 */
+  .hover-lift {
+    @apply transition-transform duration-300;
+  }
+  
+  .hover-lift:hover {
+    @apply -translate-y-1;
+  }
+  
+  /* 悬停效果 - 发光边框 */
+  .hover-glow {
+    @apply transition-all duration-300;
+  }
+  
+  .hover-glow:hover {
+    box-shadow: 0 0 30px rgba(128, 63, 159, 0.3);
+    border-color: rgba(128, 63, 159, 0.4);
+  }
+  
+  /* ==================== 光晕装饰效果 ==================== */
+  .glow-orb {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    pointer-events: none;
+  }
+  
+  .glow-orb-purple {
+    background: rgba(139, 92, 246, 0.15);
+    animation: pulse-glow 4s ease-in-out infinite;
+  }
+  
+  .glow-orb-amber {
+    background: rgba(245, 158, 11, 0.1);
+    animation: pulse-glow 6s ease-in-out infinite;
+    animation-delay: 1s;
+  }
+}
+
+/* ==================== 动画关键帧（组件层） ==================== */
+@keyframes messageSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideFromRight {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes shimmer {
+  to {
+    background-position: 200% center;
+  }
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    opacity: 0.6;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.1);
+  }
+}
+
+@keyframes ripple {
+  0% {
+    transform: scale(0.8);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(2);
+    opacity: 0;
+  }
+}
+
+@keyframes rotate {
+  from { 
+    transform: rotate(0deg); 
+  }
+  to { 
+    transform: rotate(360deg); 
   }
 }

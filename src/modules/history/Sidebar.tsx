@@ -1,17 +1,10 @@
 import * as React from "react"
 import { useRouter, useParams } from "next/navigation"
-import useSWR from "swr"
 import { MessageSquare } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useUserChats } from "./api"
 import { NewChatButton } from "./NewChatButton"
 import { UserBadge } from "@/modules/profile/UserBadge"
-
-const fetcher = async (url: string) => {
-  const res = await fetch(url)
-  if (!res.ok) throw new Error("Failed to fetch")
-  return res.json()
-}
 
 interface SidebarProps {
   isOpen: boolean
@@ -28,7 +21,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
     <>
       <div
         className={cn(
-          "fixed inset-0 bg-black/50 z-40 lg:hidden transition-opacity",
+          "fixed inset-0 bg-black/60 z-40 lg:hidden transition-opacity backdrop-blur-sm",
           isOpen ? "opacity-100" : "opacity-0 pointer-events-none"
         )}
         onClick={onClose}
@@ -36,7 +29,10 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
       
       <aside
         className={cn(
-          "fixed left-0 top-0 bottom-0 w-72 bg-white/80 backdrop-blur-xl border-r border-amber-100 transform transition-transform z-50 lg:relative lg:translate-x-0",
+          "fixed left-0 top-0 bottom-0 w-72",
+          "bg-[#1e1b2e]/95 backdrop-blur-xl",
+          "border-r border-white/10",
+          "transform transition-transform z-50 lg:relative lg:translate-x-0",
           isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
         )}
       >
@@ -45,7 +41,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
             <NewChatButton />
           </div>
 
-          <div className="flex-1 overflow-y-auto scrollbar-amber space-y-1">
+          <div className="flex-1 overflow-y-auto scrollbar-mystical-custom space-y-1">
             <div className="px-3 py-2 text-xs font-medium text-slate-500 uppercase tracking-wider">
               历史记录
             </div>
@@ -55,7 +51,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                 {[1, 2, 3].map((i) => (
                   <div
                     key={i}
-                    className="h-10 bg-amber-50 rounded-lg animate-pulse"
+                    className="h-10 bg-[#2d2a3d]/50 rounded-lg animate-pulse"
                   />
                 ))}
               </div>
@@ -68,10 +64,10 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                     onClose()
                   }}
                   className={cn(
-                    "w-full text-left px-3 py-2.5 rounded-xl transition-colors flex items-center gap-3",
+                    "w-full text-left px-3 py-2.5 rounded-xl transition-all duration-200 flex items-center gap-3",
                     currentChatId === chat.id
-                      ? "bg-amber-100 text-amber-800"
-                      : "hover:bg-amber-50 text-slate-700"
+                      ? "bg-theme-purple/20 text-theme-pinkLight border border-theme-purple/30"
+                      : "text-slate-400 hover:bg-white/5 hover:text-slate-200"
                   )}
                 >
                   <MessageSquare className="w-4 h-4 flex-shrink-0" />
@@ -85,7 +81,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
             )}
           </div>
 
-          <div className="border-t border-amber-100 pt-4 mt-4">
+          <div className="border-t border-white/10 pt-4 mt-4">
             <UserBadge />
           </div>
         </div>
